@@ -13,8 +13,8 @@ export default function AboutPage() {
             <section className="relative w-full h-[70vh] md:h-[80vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-black/40 z-10" />
                 <img
-                    src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop"
-                    alt="African Palace Architecture"
+                    src="/Gallery/photo_4_2026-02-03_05-58-55.jpg"
+                    alt="The African Palace Interior"
                     className="absolute inset-0 w-full h-full object-cover scale-105"
                 />
 
@@ -53,10 +53,10 @@ export default function AboutPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="aspect-[3/4] rounded-[32px] overflow-hidden bg-gray-100 mt-12">
-                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1470&auto=format&fit=crop" alt="Detail 1" className="w-full h-full object-cover" />
+                            <img src="/Gallery/photo_1_2026-02-03_05-58-55.jpg" alt="Palace Detail" className="w-full h-full object-cover" />
                         </div>
                         <div className="aspect-[3/4] rounded-[32px] overflow-hidden bg-gray-100">
-                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1470&auto=format&fit=crop" alt="Detail 2" className="w-full h-full object-cover" />
+                            <img src="/Gallery/photo_3_2026-02-03_05-58-55.jpg" alt="Luxury Interior" className="w-full h-full object-cover" />
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@ export default function AboutPage() {
                 <div className="max-w-[1200px] mx-auto text-center space-y-12">
                     <h2 className="text-black text-3xl md:text-5xl font-medium tracking-tight">Hosted with Passion</h2>
                     <div className="relative w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-50 shadow-xl">
-                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop" alt="The Host" className="w-full h-full object-cover" />
+                        <img src="/Gallery/photo_9_2026-02-03_05-58-55.jpg" alt="The Host" className="w-full h-full object-cover" />
                     </div>
                     <div className="max-w-2xl mx-auto">
                         <p className="text-gray-500 text-lg italic leading-relaxed">

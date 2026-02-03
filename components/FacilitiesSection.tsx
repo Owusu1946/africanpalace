@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 /*
   NOTE: This component uses remote images from Unsplash.
@@ -10,28 +11,38 @@ import Image from "next/image";
 
 const facilities = [
     {
-        name: "Mini Bar",
-        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1470&auto=format&fit=crop",
+        name: "Laundry Service",
+        image: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?q=80&w=1471&auto=format&fit=crop",
         size: "small",
     },
     {
-        name: "Workspace",
-        image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1470&auto=format&fit=crop",
+        name: "Fully Equipped Kitchen",
+        image: "/facilities/kitchen.jpg",
         size: "medium",
     },
     {
-        name: "Jacuzzi Bathroom",
-        image: "https://images.unsplash.com/photo-1560185007-cde43669a43e?q=80&w=1470&auto=format&fit=crop",
+        name: "Living Room",
+        image: "/facilities/living-room.jpg",
+        size: "medium",
+    },
+    {
+        name: "Sports Court (Soccer & Volleyball)",
+        image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1593&auto=format&fit=crop",
         size: "large",
     },
     {
-        name: "Library Room",
-        image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=1470&auto=format&fit=crop",
+        name: "Dining Area",
+        image: "/facilities/dining.jpg",
         size: "medium",
     },
     {
-        name: "Restaurant",
-        image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1470&auto=format&fit=crop",
+        name: "Study & Workspace",
+        image: "/facilities/workspace.jpeg",
+        size: "medium",
+    },
+    {
+        name: "Basketball Hoop",
+        image: "https://images.unsplash.com/photo-1544919982-b61976f0ba43?q=80&w=1422&auto=format&fit=crop",
         size: "small",
     },
 ];
@@ -42,40 +53,32 @@ export default function FacilitiesSection() {
     const getCardClasses = (size: string) => {
         switch (size) {
             case "large":
-                return "w-72 md:w-80 h-[400px] md:h-[480px] z-20 shadow-2xl"; // Center card: widest & tallest
+                return "w-72 md:w-80 h-[400px] md:h-[480px] z-20 shadow-2xl";
             case "medium":
-                return "w-60 md:w-68 h-[360px] md:h-[420px] opacity-90 hover:opacity-100 z-10"; // Mid cards
+                return "w-60 md:w-68 h-[360px] md:h-[420px] opacity-90 hover:opacity-100 z-10";
             case "small":
-                return "w-48 md:w-56 h-[320px] md:h-[360px] opacity-80 hover:opacity-100 z-0"; // End cards
+                return "w-48 md:w-56 h-[320px] md:h-[360px] opacity-80 hover:opacity-100 z-0";
             default:
                 return "w-60 h-80";
         }
     };
 
-    // 3D Transform styles for desktop
     const getTransformStyle = (index: number) => {
-        // Only apply on desktop (logic handled via media query in className usually, but for complex transforms inline is easier)
-        // We will apply these as CSS variables or direct styles and use media queries to disable them on mobile if needed, 
-        // but easiest here is to use the `md:` prefix logic with Tailwind arbitrary values is extremely verbose.
-        // Instead we will return a style object that we conditionally apply or let CSS handle "md".
-        // Since we are in JS, we can check window width or just apply it and rely on a 'md:transform-none' equivalent if were doing utility classes.
-        // Actually, simpler: Use a style object for the transform, but wrap it in a media query CSS or just apply it always and override on mobile? 
-        // No, standard inline styles apply always. We need 'md:' behavior. 
-        // We can use a helper class for the desktop specific 3d stuff.
-
-        // Let's use specific arbitrary classes for the 3D rotation on md+ screens.
-
         switch (index) {
             case 0: // Far Left
-                return "md:[transform:perspective(1000px)_rotateY(18deg)_rotateZ(-2deg)] md:origin-right";
+                return "md:[transform:rotateY(25deg)_rotateZ(-4deg)] md:origin-right";
             case 1: // Mid Left
-                return "md:[transform:perspective(1000px)_rotateY(10deg)_rotateZ(-1deg)] md:origin-right";
-            case 2: // Center
-                return "md:[transform:perspective(1000px)_rotateY(0deg)_translateZ(20px)] z-30 scale-105";
-            case 3: // Mid Right
-                return "md:[transform:perspective(1000px)_rotateY(-10deg)_rotateZ(1deg)] md:origin-left";
-            case 4: // Far Right
-                return "md:[transform:perspective(1000px)_rotateY(-18deg)_rotateZ(2deg)] md:origin-left";
+                return "md:[transform:rotateY(15deg)_rotateZ(-2deg)] md:origin-right";
+            case 2: // Inner Left
+                return "md:[transform:rotateY(8deg)_rotateZ(-1deg)] md:origin-right";
+            case 3: // Center
+                return "md:[transform:translateZ(40px)] z-30 scale-110 shadow-2xl shadow-black/20";
+            case 4: // Inner Right
+                return "md:[transform:rotateY(-8deg)_rotateZ(1deg)] md:origin-left";
+            case 5: // Mid Right
+                return "md:[transform:rotateY(-15deg)_rotateZ(2deg)] md:origin-left";
+            case 6: // Far Right
+                return "md:[transform:rotateY(-25deg)_rotateZ(4deg)] md:origin-left";
             default:
                 return "";
         }
@@ -90,16 +93,16 @@ export default function FacilitiesSection() {
                     {/* Left Text */}
                     <div className="max-w-sm pt-2 text-center md:text-left">
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
-                            Experience the ultimate in comfort and style by choosing the <br className="hidden lg:block" />
-                            perfect room tailored to your needs.
+                            Designed for total relaxation and active living. <br className="hidden lg:block" />
+                            Everything you need for a perfect stay.
                         </p>
                     </div>
 
                     {/* Right Heading */}
                     <div className="text-center md:text-right max-w-lg">
                         <h2 className="text-black text-3xl md:text-5xl font-medium tracking-tight leading-[1.2] md:leading-[1.1]">
-                            Premier Facilities and <br />
-                            Guest Services
+                            Unrivaled Facilities and <br />
+                            Modern Amenities
                         </h2>
                     </div>
                 </div>
@@ -107,7 +110,7 @@ export default function FacilitiesSection() {
                 {/* === Cards Poster Row === */}
                 <div
                     className="
-            flex flex-row items-center gap-4 md:gap-8 overflow-x-auto pb-8 md:pb-12 px-2 md:px-0 md:justify-center 
+            flex flex-row items-center gap-2 md:gap-4 overflow-x-auto pt-10 md:pt-20 pb-10 md:pb-20 px-2 md:px-0 md:justify-center 
             snap-x snap-mandatory -mx-6 md:mx-0
             [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
             md:[perspective:2000px] md:[transform-style:preserve-3d]
@@ -117,8 +120,8 @@ export default function FacilitiesSection() {
                         <div
                             key={idx}
                             className={`
-                relative flex-shrink-0 transition-all duration-500 ease-out rounded-[24px] md:rounded-[32px] overflow-hidden group snap-center
-                border border-gray-100 bg-white
+                relative flex-shrink-0 transition-all duration-700 ease-out rounded-[24px] md:rounded-[32px] overflow-hidden group snap-center
+                border border-black/5 bg-white
                 ${getCardClasses(facility.size)}
                 ${getTransformStyle(idx)}
               `}
@@ -130,11 +133,11 @@ export default function FacilitiesSection() {
                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                             {/* Gradient Overlay */}
-                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80" />
 
                             {/* Label */}
-                            <div className="absolute bottom-6 w-full text-center z-10">
-                                <span className="text-white text-base md:text-lg font-medium tracking-wide drop-shadow-md">
+                            <div className="absolute bottom-8 w-full px-4 text-center z-10 transition-transform duration-500 group-hover:translate-y-[-4px]">
+                                <span className="text-white text-base md:text-lg font-bold tracking-tight drop-shadow-lg">
                                     {facility.name}
                                 </span>
                             </div>
@@ -144,12 +147,13 @@ export default function FacilitiesSection() {
 
                 {/* === Bottom Button === */}
                 <div className="flex justify-center">
-                    <button
-                        className="px-8 py-3 rounded-full border border-gray-300 text-black font-medium text-sm hover:bg-gray-50 transition-colors"
+                    <Link
+                        href="/facilities"
+                        className="px-8 py-3 rounded-full border border-gray-300 text-black font-bold text-sm hover:bg-gray-50 transition-colors uppercase tracking-widest"
                         aria-label="See all facilities"
                     >
                         See All
-                    </button>
+                    </Link>
                 </div>
 
             </div>

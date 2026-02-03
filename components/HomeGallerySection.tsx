@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import Image from "next/image";
 
 
@@ -26,11 +27,12 @@ export default function HomeGallerySection() {
                             crafted to make your stay feel effortless.
                         </p>
 
-                        <button
+                        <Link
+                            href="/gallery"
                             className="group flex items-center gap-3 border border-gray-300 rounded-full pl-6 pr-2 py-2 hover:bg-gray-50 transition-all duration-300"
                             aria-label="View Gallery"
                         >
-                            <span className="text-black font-medium text-sm">
+                            <span className="text-black font-bold text-sm">
                                 View Gallery
                             </span>
                             <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center transition-transform group-hover:rotate-45">
@@ -48,7 +50,7 @@ export default function HomeGallerySection() {
                                     <polyline points="7 7 17 7 17 17" />
                                 </svg>
                             </div>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
