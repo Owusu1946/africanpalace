@@ -2,39 +2,17 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-const roomsData = [
-    {
-        id: 1,
-        name: "Deluxe Suite",
-        description: "Elegant and spacious suite with modern amenities.",
-        image: "/Rooms/deluxe.jpg",
-        price: 500,
-        rating: 4.9,
-        reviews: 124,
-        beds: 1,
-        guests: 2,
-        amenities: ["WiFi", "AC", "Mini Bar", "Pool View"]
-    },
-    {
-        id: 2,
-        name: "Super Deluxe Room",
-        description: "Opulent luxury with panoramic views of Tamale.",
-        image: "/Rooms/super-deluxe.jpg",
-        price: 600,
-        rating: 5.0,
-        reviews: 86,
-        beds: 2,
-        guests: 4,
-        amenities: ["WiFi", "AC", "Private Balcony", "Jacuzzi"]
-    }
-];
+import { toggleFavorite, getFavorites } from "@/app/actions/profile";
+import { roomsData } from "@/lib/data";
 
 export default function RoomsPage() {
     const [likedRooms, setLikedRooms] = useState<Set<number>>(new Set());
     const [selectedRoom, setSelectedRoom] = useState<typeof roomsData[0] | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [user, setUser] = useState<{ name: string } | null>(null);
 
     // Booking State
     const [checkIn, setCheckIn] = useState("");
@@ -43,6 +21,51 @@ export default function RoomsPage() {
     const [message, setMessage] = useState("");
     const [paymentMethod, setPaymentMethod] = useState<"card" | "momo">("card");
     const [bookingStep, setBookingStep] = useState<"input" | "payment" | "processing" | "success">("input");
+
+    // Toast State
+    const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
+
+    React.useEffect(() => {
+        const checkUser = async () => {
+            const savedUser = localStorage.getItem("user");
+            if (savedUser) {
+                setUser(JSON.parse(savedUser));
+
+                // Load favorites from localStorage immediately
+                const cachedFavs = localStorage.getItem("liked_rooms");
+                if (cachedFavs) {
+                    setLikedRooms(new Set(JSON.parse(cachedFavs)));
+                }
+
+                // Sync with server
+                const serverFavs = await getFavorites();
+                if (serverFavs && Array.isArray(serverFavs)) {
+                    setLikedRooms(new Set(serverFavs));
+                    localStorage.setItem("liked_rooms", JSON.stringify(serverFavs));
+                }
+            } else {
+                setUser(null);
+                setLikedRooms(new Set());
+                localStorage.removeItem("liked_rooms");
+            }
+        };
+        checkUser();
+        window.addEventListener("storage_user_change", checkUser);
+        return () => window.removeEventListener("storage_user_change", checkUser);
+    }, []);
+
+    const handleRoomClick = (room: typeof roomsData[0]) => {
+        if (!user) {
+            setShowAuthModal(true);
+        } else {
+            setSelectedRoom(room);
+        }
+    };
+
+    const showToast = (msg: string) => {
+        setToast({ message: msg, visible: true });
+        setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+    };
 
     // Reset booking state when modal opens/closes
     const handleCloseModal = () => {
@@ -55,17 +78,33 @@ export default function RoomsPage() {
         setPaymentMethod("card");
     };
 
-    const toggleLike = (e: React.MouseEvent, id: number) => {
+    const toggleLike = async (e: React.MouseEvent, id: number, roomName: string) => {
         e.stopPropagation();
-        setLikedRooms(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) {
-                newSet.delete(id);
-            } else {
-                newSet.add(id);
-            }
-            return newSet;
-        });
+        if (!user) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        // Optimistic Update
+        const isAdding = !likedRooms.has(id);
+        const newSet = new Set(likedRooms);
+        if (isAdding) {
+            newSet.add(id);
+            showToast(`Added ${roomName} to favorites`);
+        } else {
+            newSet.delete(id);
+            showToast(`Removed ${roomName} from favorites`);
+        }
+        setLikedRooms(newSet);
+        localStorage.setItem("liked_rooms", JSON.stringify(Array.from(newSet)));
+
+        // Server Update
+        const result = await toggleFavorite(id);
+        if (result.error) {
+            console.error("Favorite sync failed:", result.error);
+            // Revert if failed (optional, but better for robustness)
+            // For now let's just keep it for "instant" feel if we trust the network eventually
+        }
     };
 
     // Calculate nights and total
@@ -114,7 +153,7 @@ export default function RoomsPage() {
                             <div
                                 key={room.id}
                                 className="group cursor-pointer"
-                                onClick={() => setSelectedRoom(room)}
+                                onClick={() => handleRoomClick(room)}
                             >
                                 {/* Card Image Wrapper */}
                                 <div className="relative aspect-[10/11] rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-500">
@@ -127,7 +166,7 @@ export default function RoomsPage() {
                                     {/* Heart/Favorite Button */}
                                     <div className="absolute top-4 right-4 z-10">
                                         <button
-                                            onClick={(e) => toggleLike(e, room.id)}
+                                            onClick={(e) => toggleLike(e, room.id, room.name)}
                                             className={`
                                                 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md border transition-all duration-300
                                                 ${isLiked
@@ -403,6 +442,80 @@ export default function RoomsPage() {
                     </div>
                 </div>
             )}
+
+            {/* === Auth Required Modal === */}
+            {showAuthModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 sm:p-0">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300"
+                        onClick={() => setShowAuthModal(false)}
+                    />
+
+                    {/* Modal Content */}
+                    <div className="relative bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 fade-in duration-300">
+                        {/* Dramatic Visual Header */}
+                        <div className="relative h-40 w-full">
+                            <Image
+                                src="/Gallery/photo_1_2026-02-03_05-58-55.jpg"
+                                alt="Palace Access"
+                                fill
+                                className="object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-white text-xs tracking-[0.4em] uppercase font-bold border-b border-white/30 pb-2">
+                                    Member Exclusive
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-8 text-center">
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-serif text-black italic leading-tight">Authentic Experience.</h3>
+                                <p className="text-gray-500 text-sm leading-relaxed">
+                                    To reserve your stay at The African Palace, please sign in or join our membership.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Link
+                                    href="/login?callbackUrl=/rooms"
+                                    className="block w-full py-4 bg-black text-white rounded-full font-bold tracking-widest uppercase text-xs transition-all hover:bg-neutral-800 active:scale-95 shadow-lg"
+                                >
+                                    Sign In
+                                </Link>
+                                <Link
+                                    href="/signup?callbackUrl=/rooms"
+                                    className="block w-full py-4 bg-gray-50 text-black border border-gray-200 rounded-full font-bold tracking-widest uppercase text-xs transition-all hover:bg-white active:scale-95"
+                                >
+                                    Join as Member
+                                </Link>
+                            </div>
+
+                            <button
+                                onClick={() => setShowAuthModal(false)}
+                                className="text-gray-400 text-xs font-bold tracking-widest uppercase hover:text-black transition-colors"
+                            >
+                                Not Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* === Toast Notification === */}
+            <div className={`
+                fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] transition-all duration-500 ease-out
+                ${toast.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}
+            `}>
+                <div className="bg-black/80 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-full shadow-2xl flex items-center gap-4">
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-white text-sm font-medium tracking-wide">
+                        {toast.message}
+                    </span>
+                </div>
+            </div>
 
             <Footer />
         </main>

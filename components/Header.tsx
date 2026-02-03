@@ -2,13 +2,43 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/actions/auth";
 
 export default function Header({ variant = "light" }: { variant?: "light" | "dark" }) {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(variant === "dark");
     const [isPillMode, setIsPillMode] = useState(false);
+    const [user, setUser] = useState<{ name: string; avatar?: string } | null>(null);
+
+    useEffect(() => {
+        const checkUser = () => {
+            const savedUser = localStorage.getItem("user");
+            if (savedUser) {
+                setUser(JSON.parse(savedUser));
+            } else {
+                setUser(null);
+            }
+        };
+
+        checkUser();
+        window.addEventListener("storage_user_change", checkUser);
+        return () => window.removeEventListener("storage_user_change", checkUser);
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            localStorage.removeItem("user");
+            window.dispatchEvent(new Event("storage_user_change"));
+            setIsMenuOpen(false);
+            window.location.href = "/"; // Force full reload to update server components
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -80,27 +110,66 @@ export default function Header({ variant = "light" }: { variant?: "light" | "dar
                                 );
                             }
                         )}
+                        {!user && (
+                            <Link
+                                href="/login"
+                                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-500 ${navItemInactiveLabel}`}
+                            >
+                                Sign In
+                            </Link>
+                        )}
                     </div>
                 </nav>
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-3 md:gap-4 pointer-events-auto">
-                    {/* Booking Button - Hidden on actual scroll (Pill Mode) */}
-                    <Link
-                        href="/rooms"
-                        className={`
-                            group flex items-center gap-2 md:gap-3 ${pillBgClass} backdrop-blur-md border ${pillBorderClass} rounded-full pl-4 md:pl-6 pr-1.5 md:pr-2 py-1.5 md:py-2 transition-all duration-500 
-                            ${isPillMode ? "opacity-0 translate-x-4 pointer-events-none" : "opacity-100 translate-x-0 hover:bg-black/10"}
-                        `}
-                        aria-label="Book a room"
-                    >
-                        <span className={`${textColorClass} text-[12px] md:text-sm font-bold tracking-wide transition-colors duration-500`}>
-                            Booking
-                        </span>
-                        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full ${isScrolled ? "bg-black" : "bg-white"} flex items-center justify-center transition-colors duration-500`}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={isScrolled ? "text-white" : "text-black"}><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
+                    {user ? (
+                        <div className="flex items-center gap-3">
+                            <Link
+                                href="/profile"
+                                className={`
+                                    flex items-center gap-2 pr-4 pl-1.5 py-1.5 rounded-full border ${pillBorderClass} ${pillBgClass} backdrop-blur-md transition-all hover:bg-black/5
+                                    ${isPillMode ? "opacity-0 translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"}
+                                `}
+                            >
+                                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-black/10">
+                                    <Image
+                                        src={user.avatar || "/Gallery/photo_1_2026-02-03_05-58-55.jpg"}
+                                        alt={user.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                                <span className={`${textColorClass} text-xs font-bold`}>{user.name.split(' ')[0]}</span>
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className={`
+                                    p-2 rounded-full border ${pillBorderClass} ${pillBgClass} backdrop-blur-md text-red-500 hover:bg-red-50 transition-all
+                                    ${isPillMode ? "opacity-0 translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"}
+                                `}
+                                title="Logout"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                            </button>
                         </div>
-                    </Link>
+                    ) : (
+                        <Link
+                            href="/rooms"
+                            className={`
+                                group flex items-center gap-2 md:gap-3 ${pillBgClass} backdrop-blur-md border ${pillBorderClass} rounded-full pl-4 md:pl-6 pr-1.5 md:pr-2 py-1.5 md:py-2 transition-all duration-500 
+                                ${isPillMode ? "opacity-0 translate-x-4 pointer-events-none" : "opacity-100 translate-x-0 hover:bg-black/10"}
+                            `}
+                            aria-label="Book a room"
+                        >
+                            <span className={`${textColorClass} text-[12px] md:text-sm font-bold tracking-wide transition-colors duration-500`}>
+                                Booking
+                            </span>
+                            <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full ${isScrolled ? "bg-black" : "bg-white"} flex items-center justify-center transition-colors duration-500`}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={isScrolled ? "text-white" : "text-black"}><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
+                            </div>
+                        </Link>
+                    )}
 
                     {/* Mobile Menu Toggle */}
                     <button
@@ -134,6 +203,22 @@ export default function Header({ variant = "light" }: { variant?: "light" | "dar
                             {item}
                         </Link>
                     ))}
+                    {!user ? (
+                        <Link
+                            href="/login"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="text-white text-3xl font-bold tracking-wide hover:text-white/70 transition-colors border-t border-white/10 pt-8 w-full text-center"
+                        >
+                            Sign In
+                        </Link>
+                    ) : (
+                        <button
+                            onClick={handleLogout}
+                            className="text-red-500 text-3xl font-bold tracking-wide border-t border-white/10 pt-8 w-full text-center"
+                        >
+                            Log Out
+                        </button>
+                    )}
                     <div className="pt-8">
                         <span className="text-white/40 text-xs tracking-widest uppercase">Tamale's Finest Stay</span>
                     </div>
