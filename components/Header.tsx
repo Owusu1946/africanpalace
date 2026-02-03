@@ -1,0 +1,102 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+
+export default function Header() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    return (
+        <>
+            <header className="absolute top-0 left-0 w-full z-[100] px-4 py-4 md:px-10 md:py-8 flex items-center justify-between pointer-events-none transition-all duration-300">
+                {/* Brand */}
+                <div className="flex flex-col items-start pointer-events-auto">
+                    <h1 className="text-white text-lg md:text-3xl font-serif tracking-[0.2em] uppercase leading-none">
+                        African Palace
+                    </h1>
+                    <span className="text-white/70 text-[8px] md:text-xs tracking-widest uppercase mt-1">
+                        tamala's best airbnb
+                    </span>
+                </div>
+
+                {/* Desktop Navigation Pill */}
+                <nav className="pointer-events-auto hidden md:block">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-1.5 px-2 flex items-center gap-1 shadow-lg shadow-black/5">
+                        {["Home", "Rooms", "Facilities", "Contact", "About"].map(
+                            (item) => {
+                                const isActive = item === "Home";
+                                return (
+                                    <a
+                                        key={item}
+                                        href="#"
+                                        className={`
+                                            px-5 py-2 rounded-full text-sm font-medium transition-all duration-300
+                                            ${isActive
+                                                ? "bg-white text-black shadow-sm"
+                                                : "text-white/80 hover:text-white hover:bg-white/10"
+                                            }
+                                        `}
+                                    >
+                                        {item}
+                                    </a>
+                                );
+                            }
+                        )}
+                    </div>
+                </nav>
+
+                {/* Right Actions */}
+                <div className="flex items-center gap-3 md:gap-4 pointer-events-auto">
+                    {/* Booking Button (Smaller on mobile) */}
+                    <button
+                        className="group flex items-center gap-2 md:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-4 md:pl-6 pr-1.5 md:pr-2 py-1.5 md:py-2 transition-all duration-300 hover:bg-white/20"
+                        aria-label="Book a room"
+                    >
+                        <span className="text-white text-[12px] md:text-sm font-medium tracking-wide">
+                            Booking
+                        </span>
+                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white flex items-center justify-center">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-black"><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
+                        </div>
+                    </button>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="md:hidden w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"
+                        aria-label="Toggle menu"
+                    >
+                        <div className="relative w-5 h-4">
+                            <span className={`absolute left-0 block w-full h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'top-2 rotate-45' : 'top-0'}`} />
+                            <span className={`absolute left-0 block w-full h-0.5 bg-white transition-all duration-300 top-1.5 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
+                            <span className={`absolute left-0 block w-full h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'top-2 -rotate-45' : 'top-3'}`} />
+                        </div>
+                    </button>
+                </div>
+            </header>
+
+            {/* Mobile Menu Overlay */}
+            <div className={`
+                fixed inset-0 z-[90] bg-black/95 backdrop-blur-xl transition-all duration-500 md:hidden
+                ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
+            `}>
+                <div className="flex flex-col items-center justify-center h-full space-y-8">
+                    {["Home", "Rooms", "Facilities", "Contact", "About"].map((item, i) => (
+                        <a
+                            key={item}
+                            href="#"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="text-white text-3xl font-medium tracking-wide hover:text-white/70 transition-colors"
+                            style={{ transitionDelay: `${i * 50}ms` }}
+                        >
+                            {item}
+                        </a>
+                    ))}
+                    <div className="pt-8">
+                        <span className="text-white/40 text-xs tracking-widest uppercase">Tamala's Finest Stay</span>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
