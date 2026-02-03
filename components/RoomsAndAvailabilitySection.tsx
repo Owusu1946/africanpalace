@@ -10,11 +10,11 @@ import Image from "next/image";
 const rooms = [
     {
         name: "Deluxe Room",
-        image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070&auto=format&fit=crop",
+        image: "/Rooms/deluxe.jpg",
     },
     {
         name: "Super Deluxe Room",
-        image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070&auto=format&fit=crop",
+        image: "/Rooms/super-deluxe.jpg",
     },
 ];
 

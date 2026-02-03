@@ -52,9 +52,9 @@ export default function Header() {
                             (item) => {
                                 const isActive = item === "Home";
                                 return (
-                                    <a
+                                    <Link
                                         key={item}
-                                        href="#"
+                                        href={item === "Home" ? "/" : item === "Contact" ? "/contact" : item === "About" ? "/about" : "#"}
                                         className={`
                                             px-5 py-2 rounded-full text-sm font-medium transition-all duration-500
                                             ${isActive
@@ -64,7 +64,7 @@ export default function Header() {
                                         `}
                                     >
                                         {item}
-                                    </a>
+                                    </Link>
                                 );
                             }
                         )}
@@ -111,18 +111,18 @@ export default function Header() {
             `}>
                 <div className="flex flex-col items-center justify-center h-full space-y-8">
                     {["Home", "Rooms", "Facilities", "Contact", "About"].map((item, i) => (
-                        <a
+                        <Link
                             key={item}
-                            href="#"
+                            href={item === "Home" ? "/" : item === "Contact" ? "/contact" : item === "About" ? "/about" : "#"}
                             onClick={() => setIsMenuOpen(false)}
                             className="text-white text-3xl font-medium tracking-wide hover:text-white/70 transition-colors"
                             style={{ transitionDelay: `${i * 50}ms` }}
                         >
                             {item}
-                        </a>
+                        </Link>
                     ))}
                     <div className="pt-8">
-                        <span className="text-white/40 text-xs tracking-widest uppercase">Tamala's Finest Stay</span>
+                        <span className="text-white/40 text-xs tracking-widest uppercase">Tamale's Finest Stay</span>
                     </div>
                 </div>
             </div>

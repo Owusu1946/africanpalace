@@ -65,6 +65,7 @@ export default function Footer() {
                                 <Link href="#" className="text-gray-500 hover:text-black text-sm transition-colors">Instagram</Link>
                                 <Link href="#" className="text-gray-500 hover:text-black text-sm transition-colors">Twitter</Link>
                                 <Link href="#" className="text-gray-500 hover:text-black text-sm transition-colors">TikTok</Link>
+                                <a href="tel:+233202223335" className="text-gray-500 hover:text-black text-sm transition-colors">Call Us</a>
                             </nav>
                         </div>
 
