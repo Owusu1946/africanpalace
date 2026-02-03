@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { updateProfile, uploadAvatar, getFavorites } from "@/app/actions/profile";
 import { logout } from "@/app/actions/auth";
+import { getUserBookings } from "@/app/actions/booking";
 import { roomsData } from "@/lib/data";
 
 type User = {
@@ -32,6 +33,10 @@ export default function ProfilePage() {
     // Favorites State
     const [likedRoomIds, setLikedRoomIds] = useState<number[]>([]);
 
+    // Bookings State
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
     useEffect(() => {
         const checkUser = async () => {
             const savedUser = localStorage.getItem("user");
@@ -52,6 +57,12 @@ export default function ProfilePage() {
                     setLikedRoomIds(serverFavs);
                     localStorage.setItem("liked_rooms", JSON.stringify(serverFavs));
                 }
+
+                // Load Bookings
+                setIsLoadingBookings(true);
+                const userBookings = await getUserBookings();
+                setBookings(userBookings);
+                setIsLoadingBookings(false);
             }
         };
         checkUser();
@@ -334,21 +345,72 @@ export default function ProfilePage() {
                                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-black tracking-tight">Recent Stays</h2>
                                 </div>
 
-                                <div className="bg-white border border-gray-100 rounded-[24px] md:rounded-[32px] p-10 md:p-20 text-center space-y-4 md:space-y-6">
-                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto opacity-50">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="md:w-8 md:h-8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                {isLoadingBookings ? (
+                                    <div className="flex justify-center py-20 bg-gray-50 border border-black/5 rounded-[32px]">
+                                        <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-lg md:text-xl font-medium text-black">No Active Bookings</h3>
-                                        <p className="text-gray-400 text-xs md:text-sm max-w-xs mx-auto">Your next royal journey at The African Palace is waiting to be written.</p>
+                                ) : bookings.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                        {bookings.map((booking) => (
+                                            <div key={booking._id} className="group bg-gray-50 rounded-2xl md:rounded-3xl p-5 md:p-6 border border-gray-100 hover:border-black/10 hover:shadow-xl transition-all duration-500">
+                                                <div className="flex justify-between items-start mb-4 md:mb-6">
+                                                    <div className="space-y-1">
+                                                        <h3 className="text-base md:text-lg font-bold text-black group-hover:text-rose-600 transition-colors uppercase tracking-tight">{booking.roomName}</h3>
+                                                        <p className="text-[10px] md:text-xs text-black/40 font-bold uppercase tracking-widest">Reserved for {booking.userName}</p>
+                                                    </div>
+                                                    <span className="px-3 py-1 bg-green-50 text-green-600 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100">
+                                                        {booking.status}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] md:text-[10px] text-black/30 font-bold uppercase tracking-[0.2em]">Check-in</span>
+                                                        <p className="text-xs md:text-sm font-bold text-black">{new Date(booking.checkIn).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] md:text-[10px] text-black/30 font-bold uppercase tracking-[0.2em]">Check-out</span>
+                                                        <p className="text-xs md:text-sm font-bold text-black">{new Date(booking.checkOut).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-gray-100">
+                                                    <div className="flex -space-x-2">
+                                                        {[...Array(Math.min(4, booking.guests))].map((_, i) => (
+                                                            <div key={i} className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white border-2 border-gray-50 flex items-center justify-center overflow-hidden">
+                                                                <Image
+                                                                    src={`https://ui-avatars.com/api/?name=${booking.userName}&background=random`}
+                                                                    alt="guest"
+                                                                    width={32}
+                                                                    height={32}
+                                                                    className="opacity-80"
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-[9px] md:text-[10px] text-black/30 font-bold uppercase tracking-[0.2em] block">Total Paid</span>
+                                                        <span className="text-sm md:text-base font-black text-black">GHC {booking.totalPrice}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <Link
-                                        href="/rooms"
-                                        className="inline-block w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-black text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase rounded-full hover:shadow-2xl transition-all duration-500 active:scale-95"
-                                    >
-                                        Explore Suites
-                                    </Link>
-                                </div>
+                                ) : (
+                                    <div className="bg-white border border-gray-100 rounded-[24px] md:rounded-[32px] p-10 md:p-20 text-center space-y-4 md:space-y-6">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto opacity-50">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="md:w-8 md:h-8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-lg md:text-xl font-medium text-black">No Active Bookings</h3>
+                                            <p className="text-gray-400 text-xs md:text-sm max-w-xs mx-auto">Your next royal journey at The African Palace is waiting to be written.</p>
+                                        </div>
+                                        <Link
+                                            href="/rooms"
+                                            className="inline-block w-full sm:w-auto px-8 md:px-10 py-3 md:py-4 bg-black text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase rounded-full hover:shadow-2xl transition-all duration-500 active:scale-95"
+                                        >
+                                            Explore Suites
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
                         )}
 

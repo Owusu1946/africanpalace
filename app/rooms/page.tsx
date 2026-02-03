@@ -6,6 +6,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toggleFavorite, getFavorites } from "@/app/actions/profile";
+import { createBooking } from "@/app/actions/booking";
 import { roomsData } from "@/lib/data";
 
 export default function RoomsPage() {
@@ -118,12 +119,28 @@ export default function RoomsPage() {
         setBookingStep("payment");
     };
 
-    const handleConfirmAndPay = () => {
+    const handleConfirmAndPay = async () => {
+        if (!selectedRoom || !user) return;
+
         setBookingStep("processing");
-        // Simulate processing for 2.5 seconds
-        setTimeout(() => {
+
+        const result = await createBooking({
+            roomId: selectedRoom.id,
+            roomName: selectedRoom.name,
+            checkIn,
+            checkOut,
+            guests,
+            totalPrice: totalPrice + 50, // Including service fee
+            paymentMethod,
+            message
+        });
+
+        if (result.success) {
             setBookingStep("success");
-        }, 2500);
+        } else {
+            showToast(result.error || "Booking failed. Please try again.");
+            setBookingStep("input");
+        }
     };
 
     return (
